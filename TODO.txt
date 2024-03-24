@@ -1,0 +1,22 @@
+- Fetch Date & Time from the phone during connection. No settings required. Use internal RTC.
+- Remove temperature displaying and setting.
+- Expand brightness to 16 levels. Do not store in non-volatile memory, just in RAM.
+- Remove score reverting feature.
+- Simplify score setting. Blink only once and with the part that is being changed. 
+  If the received score is the same, blink just with the colon.
+    - On the phone:
+        - Display changes just on the phone during score changing. 
+        - Send the score to the matrix display only after confirmation at the end.
+    - On the watch:
+        - Allow only change by single increment/decrement.
+        - Long press of the combination of up and bottom button will set the position of the matrix display (left/right).
+        - Center button press/long press will reset the whole score.
+- After connecting a different phone:
+    - Replace the score on the BLE display only if the timestamp of the score set on the phone is later
+      than the timestamp of the last score set on the BLE display.
+    - The phone should initiate the request for the timestamp, compare it with it's timestamp and then
+      either send SET command or GET command for the score.
+- On the first connection after the BLE display startup, load configuration from the phone.
+    - No configuration on the phone = send default configuration.
+    - Do not store any profiles on the BLE display.
+    - Do not change the configuration after a different phone connects during one run.
