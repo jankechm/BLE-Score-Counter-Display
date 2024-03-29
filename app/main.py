@@ -4,14 +4,13 @@ from machine import Pin
 from app.mx_data import MxScore
 # TODO
 # from app.mx_data import MxDate, MxTime
-from app.hw import display
+from app.hw import display, ble_uart
 from app.view import BasicViewer
 
 import uasyncio as asyncio
 import app.constants as const
 
 import micropython
-import utime
 import gc
 
 class App:
@@ -39,9 +38,6 @@ class App:
 
 		self.display = display
 
-		# Count ticks for measuring period between button pushes
-		self.ticks = utime.ticks_ms()
-
 		# Info renderable on the matrix
 		self.mx_score = MxScore()
 		# TODO
@@ -51,25 +47,10 @@ class App:
 		self.basic_viewer = BasicViewer()
 		self.basic_viewer.score = self.mx_score  # type: ignore
 
-	def exec_not_too_fast(self, change):
-		"""
-		Execute the code conditionally.
-		Avoid unwanted double increment/decrement of values
-		- two changes of the same type in a very short time.
-		"""
-		
-		MIN_TICKS_DIFF = 200
+		self.ble_reader = asyncio.StreamReader(ble_uart)
 
-		t_curr = utime.ticks_ms()
-		t_diff = utime.ticks_diff(t_curr, self.ticks)
-		executed = False
-		# t_diff can also be negative, after a period of time
-		if t_diff > MIN_TICKS_DIFF or t_diff < 0:
-			self.ticks = t_curr
-			# Execute the change itself
-			change()
-			executed = True
-		return executed
+	# def handle_ble_data_received(self):
+	# 	pass
 	
 	def handle_btn_left(self):
 		"""
@@ -147,10 +128,29 @@ class App:
 			# pass execution to other tasks
 			await asyncio.sleep_ms(0)
 
+	async def recv_cmd(self):
+		while True:
+			cmd = await self.ble_reader.readline()
+			if (cmd is not None and len(cmd) > 2
+					and cmd[-2] == const.CR and cmd[-1] == const.LF):
+				decoded = cmd[0:-2].decode('ascii')
+				print("Received cmd: {}".format(decoded))
+				if decoded.startswith(const.SET_SCORE_CMD_PREFIX):
+					score = decoded[len(const.SET_SCORE_CMD_PREFIX):]
+					score = score.split(const.SET_SCORE_CMD_SCORE_DELIMITER)
+					if len(score) == 2:
+						try:
+							left_score = int(score[0])
+							right_score = int(score[1])
+							self.mx_score.set_score(left_score, right_score)
+						except ValueError:
+							print("Unable to parse score!")
+
 	async def main(self):
 		asyncio.create_task(self.led_blink())
 		asyncio.create_task(self.basic_operation())
 		asyncio.create_task(self.setting_operation())
+		asyncio.create_task(self.recv_cmd())
 		# asyncio.create_task(self.mem_monitor())
 
 		print('Running')
