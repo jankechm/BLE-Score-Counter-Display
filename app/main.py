@@ -134,7 +134,7 @@ class App:
 			if (cmd is not None and len(cmd) > 2
 					and cmd[-2] == const.CR and cmd[-1] == const.LF):
 				decoded = cmd[0:-2].decode('ascii')
-				print("Received cmd: {}".format(decoded))
+				print("Received command: {}".format(decoded))
 				if decoded.startswith(const.SET_SCORE_CMD_PREFIX):
 					score = decoded[len(const.SET_SCORE_CMD_PREFIX):]
 					score = score.split(const.SET_SCORE_CMD_SCORE_DELIMITER)

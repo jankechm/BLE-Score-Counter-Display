@@ -3,7 +3,7 @@
 import app.font as mx_font
 import app.constants as const
 from app.data import Score
-from app.hw import display
+from app.hw import display, rtc
 from app.decorator import singleton
 
 class MxRenderable:
@@ -245,44 +245,44 @@ class MxScore(MxNumeric):
 #         self._matrix.hline(15 + x_shift, 13, 2, 1)
 #         self._matrix.hline(15 + x_shift, 14, 2, 1)
 
-# @singleton
-# class MxTime(MxNumeric):
-#     MINUTES_X_SHIFT = 18
+@singleton
+class MxTime(MxNumeric):
+    MINUTES_X_SHIFT = 18
 
-#     def __init__(self) -> None:
-#         super().__init__()
+    def __init__(self) -> None:
+        super().__init__()
         
-#         self._rtc = rtc
-#         self.pull()
+        self._rtc = rtc
+        self.pull()
 
-#     def pull(self):
-#         """
-#         Fetch the time from the Real Time Clock module.
-#         """
+    def pull(self):
+        """
+        Fetch the time from the Real Time Clock module.
+        """
 
-#         datetime = self._rtc.get_time()
+        datetime = self._rtc.datetime()
 
-#         self._hours = datetime.hours
-#         self._minutes = datetime.minutes
+        self._hours = datetime[const.RTC_HOURS_IDX]
+        self._minutes = datetime[const.RTC_MINUTES_IDX]
 
-#     def render(self, x_shift=0, pre_clear=True, redraw=True):
-#         """
-#         This method pulls the actual time from the RTC module before rendering.
-#         """
+    def render(self, x_shift=0, pre_clear=True, redraw=True):
+        """
+        This method pulls the actual time from the RTC module before rendering.
+        """
 
-#         self.pull()
+        self.pull()
 
-#         self._matrix.fill(0)
+        self._matrix.fill(0)
 
-#         self._render_2_digit_num(self._hours, x_shift)
-#         self._render_time_delimiter(x_shift)
-#         self._render_2_digit_num(self._minutes, x_shift + self.MINUTES_X_SHIFT)
+        self._render_2_digit_num(self._hours, x_shift)
+        self._render_time_delimiter(x_shift)
+        self._render_2_digit_num(self._minutes, x_shift + self.MINUTES_X_SHIFT)
 
-#         self._matrix.redraw_twice()
+        self._matrix.redraw_twice()
 
-#     def _render_time_delimiter(self, x_shift=0):
-#         self._matrix.hline(15 + x_shift, 4, 2, 1)
-#         self._matrix.hline(15 + x_shift, 5, 2, 1)
-#         self._matrix.hline(15 + x_shift, 10, 2, 1)
-#         self._matrix.hline(15 + x_shift, 11, 2, 1)
+    def _render_time_delimiter(self, x_shift=0):
+        self._matrix.hline(15 + x_shift, 4, 2, 1)
+        self._matrix.hline(15 + x_shift, 5, 2, 1)
+        self._matrix.hline(15 + x_shift, 10, 2, 1)
+        self._matrix.hline(15 + x_shift, 11, 2, 1)
 

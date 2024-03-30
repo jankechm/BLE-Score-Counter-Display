@@ -4,10 +4,10 @@ import uasyncio as asyncio
 import app.constants as const
 from app.adt import CircularList
 from app.hw import display
-from app.mx_data import MxRenderable
+from app.mx_data import MxRenderable, MxTime
 from app.data import Config
 # TODO
-# from app.mx_data import MxDate, MxTime
+# from app.mx_data import MxDate
 
 SPACE = 8
 
@@ -25,7 +25,7 @@ class BasicViewer:
 
     def __init__(self):
         # TODO get Config from constructor or load later from the phone
-        self._config = Config(True, False, False, True, const.INITIAL_BRIGHTNESS)
+        self._config = Config(True, False, True, False, const.INITIAL_BRIGHTNESS)
         self._matrix = display
 
         self.score = None
@@ -41,8 +41,8 @@ class BasicViewer:
         # TODO
         # if config.use_date:
         #     self._to_render.append(MxDate())
-        # if config.use_time:
-        #     self._to_render.append(MxTime())
+        if self._config.use_time:
+            self._to_render.append(MxTime())
         
         if self._config.scroll:
             self._view_mode = self.SCROLL_MODE
