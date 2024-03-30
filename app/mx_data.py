@@ -2,6 +2,7 @@
 
 import app.font as mx_font
 import app.constants as const
+import uasyncio as asyncio
 from app.data import Score
 from app.hw import display, rtc
 from app.decorator import singleton
@@ -168,7 +169,7 @@ class MxScore(MxNumeric):
         else:
             self._score.right = val
 
-    def render(self, x_shift=0, pre_clear=True, redraw=True):
+    def render(self, x_shift=0, pre_clear=True, redraw=True, render_delim=True):
         if pre_clear:
             self._matrix.fill(0)
 
@@ -190,7 +191,8 @@ class MxScore(MxNumeric):
                 r_score = self.SingleTwoDigit(r_tens, r_ones, const.RIGHT)
 
         l_score.render(x_shift)
-        self._render_score_delimiter(x_shift)
+        if render_delim:
+            self._render_score_delimiter(x_shift)
         r_score.render(x_shift)
 
         if redraw:
@@ -199,6 +201,32 @@ class MxScore(MxNumeric):
     def _render_score_delimiter(self, x_shift):
         self._matrix.hline(15 + x_shift, 7, 2, 1)
         self._matrix.hline(15 + x_shift, 8, 2, 1)
+
+    async def render_change(self, l_val: int, r_val: int):
+        """
+        Indicate new score being set.
+        If both sides are being changed, blink with the whole display.
+        If one side is being changed, blink just with that score part.
+        If the both values are the same, blink just with the delimiter.
+        """
+
+        self.render()
+        await asyncio.sleep_ms(300)
+
+        if self._score.left != l_val:
+            if self._score.right != r_val:
+                self._matrix.fill(0)
+                self._matrix.redraw_twice()
+            else:
+                self._matrix.clear_half(const.LEFT)
+        elif self._score.right != r_val:
+            self._matrix.clear_half(const.RIGHT)
+        else:
+            self.render(render_delim=False)
+        
+        self.set_score(l_val, r_val)
+        await asyncio.sleep_ms(400)
+        self.render()
 
 # @singleton
 # class MxDate(MxNumeric):
@@ -252,7 +280,6 @@ class MxTime(MxNumeric):
     def __init__(self) -> None:
         super().__init__()
         
-        self._rtc = rtc
         self.pull()
 
     def pull(self):
@@ -260,7 +287,7 @@ class MxTime(MxNumeric):
         Fetch the time from the Real Time Clock module.
         """
 
-        datetime = self._rtc.datetime()
+        datetime = rtc.datetime()
 
         self._hours = datetime[const.RTC_HOURS_IDX]
         self._minutes = datetime[const.RTC_MINUTES_IDX]

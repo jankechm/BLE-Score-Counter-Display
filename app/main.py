@@ -4,7 +4,7 @@ from machine import Pin
 from app.mx_data import MxScore
 # TODO
 # from app.mx_data import MxDate, MxTime
-from app.hw import display, ble_uart
+from app.hw import display, ble_uart, rtc
 from app.view import BasicViewer
 
 import uasyncio as asyncio
@@ -90,6 +90,51 @@ class App:
 		self.exit = True
 		self.basic_mode = False
 
+	async def handle_set_score_cmd(self, cmd: str):
+		print("Handle SET_SCORE command")
+		score = cmd[len(const.SET_SCORE_CMD_PREFIX):]
+		score = score.split(const.SET_SCORE_CMD_SCORE_DELIMITER)
+		if len(score) == 2:
+			isOk = False
+			try:
+				left_score = int(score[0])
+				right_score = int(score[1])
+				isOk = True
+			except ValueError:
+				print("Unable to parse score!")
+			if isOk:
+				self.basic_mode = False
+				self.basic_viewer.disable()
+				await self.mx_score.render_change(left_score, right_score)
+				self.basic_mode = True
+
+	def handle_set_time_cmd(self, cmd: str):
+		print("Handle SET_TIME command")
+		datetime_str = cmd[len(const.SET_TIME_CMD_PREFIX):]
+		datetime_split = datetime_str.split()
+		print(datetime_split)
+		if len(datetime_split) == 3:
+			try:
+				weekday = int(datetime_split[0])
+				
+				day_month_year = datetime_split[1].split(".")
+				if len(day_month_year) == 3:
+					day = int(day_month_year[0])
+					month = int(day_month_year[1])
+					year = int(day_month_year[2])
+				
+				hour_minute_second = datetime_split[2].split(":")
+				if len(hour_minute_second) == 3:
+					hour = int(hour_minute_second[0])
+					minute = int(hour_minute_second[1])
+					second = int(hour_minute_second[2])
+
+				# Set date and time of the Real Time Clock
+				rtc.datetime(
+					(year, month, day, weekday, hour, minute, second, 0))
+			except ValueError | NameError:
+				print("Unable to parse datetime!")
+
 	async def led_blink(self):
 		led_onboard = Pin(25, Pin.OUT)
 
@@ -135,16 +180,11 @@ class App:
 					and cmd[-2] == const.CR and cmd[-1] == const.LF):
 				decoded = cmd[0:-2].decode('ascii')
 				print("Received command: {}".format(decoded))
+
 				if decoded.startswith(const.SET_SCORE_CMD_PREFIX):
-					score = decoded[len(const.SET_SCORE_CMD_PREFIX):]
-					score = score.split(const.SET_SCORE_CMD_SCORE_DELIMITER)
-					if len(score) == 2:
-						try:
-							left_score = int(score[0])
-							right_score = int(score[1])
-							self.mx_score.set_score(left_score, right_score)
-						except ValueError:
-							print("Unable to parse score!")
+					await self.handle_set_score_cmd(decoded)
+				elif decoded.startswith(const.SET_TIME_CMD_PREFIX):
+					self.handle_set_time_cmd(decoded)
 
 	async def main(self):
 		asyncio.create_task(self.led_blink())
