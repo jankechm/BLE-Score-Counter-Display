@@ -6,5 +6,5 @@
 
 
 
-https://github.com/jankechm/BLE-Score-Counter-Display/assets/22982620/d6f2ce9a-dca6-4ff7-8f3f-9483fd1ec2a8
+https://github.com/jankechm/BLE-Score-Counter-Display/assets/22982620/9a814e2d-1ac7-41b0-a2dc-2a36e0cf6935
 
