@@ -547,48 +547,7 @@ class Medium:
 					VerticalLine(5,7,8),
 					VerticalLine(6,8,6)
 				]
-			),
-			# "A": Char(
-			# 	hlines = [
-			# 		HorizontalLine(1,0,5),
-			# 		HorizontalLine(0,1,7),
-			# 		HorizontalLine(0,7,7),
-			# 		HorizontalLine(0,8,7),
-			# 	],
-			# 	vlines = [
-			# 		VerticalLine(0,1,15),
-			# 		VerticalLine(1,0,16),
-			# 		VerticalLine(5,0,16),
-			# 		VerticalLine(6,1,15)
-			# 	]
-			# ),
-			
-			# "J": Char(
-			# 	hlines = [
-			# 		HorizontalLine(0,14,7),
-			# 		HorizontalLine(0,15,6)
-			# 	],
-			# 	vlines = [
-			# 		VerticalLine(5,0,15),
-			# 		VerticalLine(6,0,14)
-			# 	]
-			# ),
-			# "S": Char(
-			# 	hlines = [
-			# 		HorizontalLine(1,0,5),
-			# 		HorizontalLine(0,1,7),
-			# 		HorizontalLine(0,7,6),
-			# 		HorizontalLine(1,8,6),
-			# 		HorizontalLine(0,14,7),
-			# 		HorizontalLine(1,15,5)
-			# 	],
-			# 	vlines = [
-			# 		VerticalLine(0,1,7),
-			# 		VerticalLine(1,0,8),
-			# 		VerticalLine(5,8,8),
-			# 		VerticalLine(6,8,7)
-			# 	]
-			# ),
+			)
 		}
 
 	def get(self, char):

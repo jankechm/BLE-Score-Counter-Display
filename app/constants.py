@@ -1,5 +1,4 @@
 # Author: Marek Jankech
-# Copyright Marek Jankech 2022 Released under the MIT license
 
 ########################
 # Bit operations

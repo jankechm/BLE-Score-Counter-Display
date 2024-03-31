@@ -17,7 +17,7 @@ class App:
 	def __init__(self):
 		"""
 		Main application. 
-		Evaluates user inputs from remote control and performs appropriate
+		Evaluates user inputs from BLE remote control and performs appropriate
 		actions on matrix display.
 		It uses asynchronous tasks execution (cooperative multitasking)
 		to pretend parallelism.
@@ -48,20 +48,6 @@ class App:
 		self.basic_viewer.score = self.mx_score  # type: ignore
 
 		self.ble_reader = asyncio.StreamReader(ble_uart)
-
-	# def handle_ble_data_received(self):
-	# 	pass
-	
-	def handle_btn_left(self):
-		"""
-		Left score
-		"""
-
-		if self.basic_mode:
-			self.set_left_score = True
-			self.basic_mode = False
-			self.mx_score.render()
-			print("Setting left score...")
 
 	def toggle_on_off(self):
 		"""
@@ -154,25 +140,6 @@ class App:
 			# pass execution to other tasks
 			await asyncio.sleep_ms(0)
 
-	async def setting_operation(self):
-		while True:
-			if not self.basic_mode:
-				self.basic_viewer.disable()
-
-				if self.set_left_score or self.set_right_score:
-					self.display.clear_half(
-						const.LEFT if self.set_left_score else const.RIGHT)
-					await asyncio.sleep_ms(300)
-					# TODO disable UART IRQ
-					self.mx_score.render()
-					# TODO enable UART IRQ
-					await asyncio.sleep_ms(650)
-
-				self.basic_mode = True
-				
-			# pass execution to other tasks
-			await asyncio.sleep_ms(0)
-
 	async def recv_cmd(self):
 		while True:
 			cmd = await self.ble_reader.readline()
@@ -189,7 +156,6 @@ class App:
 	async def main(self):
 		asyncio.create_task(self.led_blink())
 		asyncio.create_task(self.basic_operation())
-		asyncio.create_task(self.setting_operation())
 		asyncio.create_task(self.recv_cmd())
 		# asyncio.create_task(self.mem_monitor())
 
