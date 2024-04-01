@@ -121,6 +121,22 @@ class App:
 			except ValueError | NameError:
 				print("Unable to parse datetime!")
 
+	def handle_set_bright_cmd(self, cmd: str):
+		print("Handle SET_BRIGHTNESS command")
+		brightness = cmd[len(const.SET_BRIGHTNESS_CMD_PREFIX):]
+		isOk = False
+		try:
+			level = int(brightness)
+			isOk = True
+		except ValueError:
+			print("Unable to parse brightness level!")
+		if isOk:
+			if level < const.MIN_BRIGHTNESS:
+				level = const.MIN_BRIGHTNESS
+			elif level > const.MAX_BRIGHTNESS:
+				level = const.MAX_BRIGHTNESS
+			self.display.set_brightness(level)
+
 	async def led_blink(self):
 		led_onboard = Pin(25, Pin.OUT)
 
@@ -152,6 +168,8 @@ class App:
 					await self.handle_set_score_cmd(decoded)
 				elif decoded.startswith(const.SET_TIME_CMD_PREFIX):
 					self.handle_set_time_cmd(decoded)
+				elif decoded.startswith(const.SET_BRIGHTNESS_CMD_PREFIX):
+					self.handle_set_bright_cmd(decoded)
 
 	async def main(self):
 		asyncio.create_task(self.led_blink())
