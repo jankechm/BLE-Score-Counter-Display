@@ -228,50 +228,48 @@ class MxScore(MxNumeric):
         await asyncio.sleep_ms(400)
         self.render()
 
-# @singleton
-# class MxDate(MxNumeric):
-#     DAY_X_SHIFT = 18
-#     DAY_ORDINAL_DOT_X_SHIFT = 18
+@singleton
+class MxDate(MxNumeric):
+    DAY_X_SHIFT = 18
+    DAY_ORDINAL_DOT_X_SHIFT = 18
 
-#     def __init__(self) -> None:
-#         super().__init__()
+    def __init__(self) -> None:
+        super().__init__()
 
-#         self._rtc = rtc
-#         self.pull()
+        self.pull()
 
-#     def pull(self):
-#         """
-#         Fetch the date from the Real Time Clock module.
-#         """
+    def pull(self):
+        """
+        Fetch the date from the Real Time Clock module.
+        """
 
-#         datetime = self._rtc.get_time()
+        datetime = rtc.datetime()
 
-#         self._day = datetime.date
-#         self._month = datetime.month
-#         self._year = datetime.year
+        self._day = datetime[const.RTC_DATE_IDX]
+        self._month = datetime[const.RTC_MONTH_IDX]
 
-#     def render(self, x_shift=0, pre_clear=True, redraw=True):
-#         """
-#         Render the day and month with their ordinal dots. No year rendering.
-#         This is intended for rendering during basic operation mode.
-#         """
+    def render(self, x_shift=0, pre_clear=True, redraw=True):
+        """
+        Render the day and month with their ordinal dots. No year rendering.
+        This is intended for rendering during basic operation mode.
+        """
 
-#         self.pull()
+        self.pull()
 
-#         if pre_clear:
-#             self._matrix.fill(0)
+        if pre_clear:
+            self._matrix.fill(0)
 
-#         self._render_2_digit_num(self._day, x_shift)
-#         self._render_ordinal_dot(x_shift)
-#         self._render_2_digit_num(self._month, x_shift + self.DAY_X_SHIFT)
-#         self._render_ordinal_dot(x_shift + self.DAY_ORDINAL_DOT_X_SHIFT)
+        self._render_2_digit_num(self._day, x_shift)
+        self._render_ordinal_dot(x_shift)
+        self._render_2_digit_num(self._month, x_shift + self.DAY_X_SHIFT)
+        self._render_ordinal_dot(x_shift + self.DAY_ORDINAL_DOT_X_SHIFT)
 
-#         if redraw:
-#             self._matrix.redraw_twice()
+        if redraw:
+            self._matrix.redraw_twice()
 
-#     def _render_ordinal_dot(self, x_shift=0):
-#         self._matrix.hline(15 + x_shift, 13, 2, 1)
-#         self._matrix.hline(15 + x_shift, 14, 2, 1)
+    def _render_ordinal_dot(self, x_shift=0):
+        self._matrix.hline(15 + x_shift, 13, 2, 1)
+        self._matrix.hline(15 + x_shift, 14, 2, 1)
 
 @singleton
 class MxTime(MxNumeric):

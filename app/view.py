@@ -4,7 +4,7 @@ import uasyncio as asyncio
 import app.constants as const
 from app.adt import CircularList
 from app.hw import display
-from app.mx_data import MxRenderable, MxTime
+from app.mx_data import MxRenderable, MxDate, MxTime
 from app.data import Config
 # TODO
 # from app.mx_data import MxDate
@@ -25,7 +25,7 @@ class BasicViewer:
 
     def __init__(self):
         # TODO get Config from constructor or load later from the phone
-        self._config = Config(True, False, True, False, const.INITIAL_BRIGHTNESS)
+        self.config = Config(True, False, True, False, const.INITIAL_BRIGHTNESS)
         self._matrix = display
 
         self.score = None
@@ -36,21 +36,32 @@ class BasicViewer:
     def load(self):
         self._to_render = []
 
-        if self._config.use_score and self.score is not None:
+        if self.config.use_score and self.score is not None:
             self._to_render.append(self.score)
-        # TODO
-        # if config.use_date:
-        #     self._to_render.append(MxDate())
-        if self._config.use_time:
+        if self.config.use_date:
+            self._to_render.append(MxDate())
+        if self.config.use_time:
             self._to_render.append(MxTime())
         
-        if self._config.scroll:
+        if self.config.scroll:
             self._view_mode = self.SCROLL_MODE
         else:
             self._view_mode = self.ALTERNATE_MODE
 
     def disable(self):
         self._view_mode = NO_VIEW
+
+    # def set_use_score(self, val: bool):
+    #     self.config.use_score = val
+
+    # def set_use_date(self, val: bool):
+    #     self.config.use_date = val
+
+    # def set_use_time(self, val: bool):
+    #     self.config.use_time = val
+
+    # def set_use_scroll(self, val: bool):
+    #     self.config.scroll = val
 
     async def view_info(self):
         self.load()

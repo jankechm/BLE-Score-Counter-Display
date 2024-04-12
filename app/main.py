@@ -8,6 +8,7 @@ from app.hw import display, ble_uart, rtc
 from app.view import BasicViewer
 
 import uasyncio as asyncio
+import ujson as json
 import app.constants as const
 
 import micropython
@@ -48,6 +49,7 @@ class App:
 		self.basic_viewer.score = self.mx_score  # type: ignore
 
 		self.ble_reader = asyncio.StreamReader(ble_uart)
+		self.ble_writer = asyncio.StreamWriter(ble_uart, {})
 
 	def toggle_on_off(self):
 		"""
@@ -136,6 +138,119 @@ class App:
 			elif level > const.MAX_BRIGHTNESS:
 				level = const.MAX_BRIGHTNESS
 			self.display.set_brightness(level)
+			self.basic_viewer.config.bright_lvl = level
+
+	def handle_set_show_score_cmd(self, cmd: str):
+		print("Handle SET_SHOW_SCORE command")
+		show_score_str = cmd[len(const.SET_SHOW_SCORE_CMD_PREFIX):]
+		show_score = self.parse_bool_str_cmd_val(show_score_str)
+		if show_score is None:
+			print("Invalid show score value!")
+		else:
+			# Halt rendering only if show_score value is different
+			# than the value in current config.
+			if self.basic_viewer.config.use_score != show_score:
+				self.basic_mode = False
+				self.basic_viewer.disable()
+				self.basic_viewer.config.use_score = show_score
+				self.basic_mode = True
+
+	def handle_set_show_date_cmd(self, cmd: str):
+		print("Handle SET_SHOW_DATE command")
+		show_date_str = cmd[len(const.SET_SHOW_DATE_CMD_PREFIX):]
+		show_date = self.parse_bool_str_cmd_val(show_date_str)
+		if show_date is None:
+			print("Invalid show date value!")
+		else:
+			# Halt rendering only if show_date value is different
+			# than the value in current config.
+			if self.basic_viewer.config.use_date != show_date:
+				self.basic_mode = False
+				self.basic_viewer.disable()
+				self.basic_viewer.config.use_date = show_date
+				self.basic_mode = True
+
+	def handle_set_show_time_cmd(self, cmd: str):
+		print("Handle SET_SHOW_TIME command")
+		show_time_str = cmd[len(const.SET_SHOW_TIME_CMD_PREFIX):]
+		show_time = self.parse_bool_str_cmd_val(show_time_str)
+		if show_time is None:
+			print("Invalid show time value!")
+		else:
+			# Halt rendering only if show_time value is different
+			# than the value in current config.
+			if self.basic_viewer.config.use_time != show_time:
+				self.basic_mode = False
+				self.basic_viewer.disable()
+				self.basic_viewer.config.use_time = show_time
+				self.basic_mode = True
+	
+	def handle_set_scroll_cmd(self, cmd: str):
+		print("Handle SET_SCROLL command")
+		scroll_str = cmd[len(const.SET_SCROLL_CMD_PREFIX):]
+		scroll = self.parse_bool_str_cmd_val(scroll_str)
+		if scroll is None:
+			print("Invalid scroll value!")
+		else:
+			# Halt rendering only if scroll value is different
+			# than the value in current config.
+			if self.basic_viewer.config.scroll != scroll:
+				self.basic_mode = False
+				self.basic_viewer.disable()
+				self.basic_viewer.config.scroll = scroll
+				self.basic_mode = True
+
+	async def handle_get_cfg_cmd(self, cmd: str):
+		print("Handle GET_CONFIG command")
+		cfg_str = json.dumps(self.basic_viewer.config.__dict__)
+		cmd_to_send = "{}{}\r\n".format(
+			const.CONFIG_CMD_PREFIX, cfg_str)
+		print("Sending {}".format(cmd_to_send))
+		await self.ble_writer.awrite(cmd_to_send.encode('ascii'))
+
+		# bright_lvl_msg = "{}{}\r\n".format(
+		# 	const.CONFIG_BRIGHTNESS_CMD_PREFIX, 
+		# 	self.basic_viewer.config.bright_lvl)
+		# print("Sending {}".format(bright_lvl_msg))
+		# await self.ble_writer.awrite(bright_lvl_msg.encode('ascii'))
+		# await asyncio.sleep_ms(40)
+
+		# use_score = 1 if self.basic_viewer.config.use_score else 0
+		# use_score_msg = "{}{}\r\n".format(
+		# 	const.CONFIG_SHOW_SCORE_CMD_PREFIX, use_score)
+		# print("Sending {}".format(use_score_msg))
+		# await self.ble_writer.awrite(use_score_msg.encode('ascii'))
+		# await asyncio.sleep_ms(40)
+
+		# use_date = 1 if self.basic_viewer.config.use_date else 0
+		# use_date_msg = "{}{}\r\n".format(
+		# 	const.CONFIG_SHOW_DATE_CMD_PREFIX, use_date)
+		# print("Sending {}".format(use_date_msg))
+		# await self.ble_writer.awrite(use_date_msg.encode('ascii'))
+		# await asyncio.sleep_ms(40)
+		
+		# use_time = 1 if self.basic_viewer.config.use_time else 0
+		# use_time_msg = "{}{}\r\n".format(
+		# 	const.CONFIG_SHOW_TIME_CMD_PREFIX, use_time)
+		# print("Sending {}".format(use_time_msg))
+		# await self.ble_writer.awrite(use_time_msg.encode('ascii'))
+		# await asyncio.sleep_ms(40)
+
+		# scroll = 1 if self.basic_viewer.config.scroll else 0
+		# scroll_msg = "{}{}\r\n".format(
+		# 	const.CONFIG_SCROLL_CMD_PREFIX, scroll)
+		# print("Sending {}".format(scroll_msg))
+		# await self.ble_writer.awrite(scroll_msg.encode('ascii'))
+		# await asyncio.sleep_ms(40)
+
+	def parse_bool_str_cmd_val(self, str_val: str):
+		if str_val == "1":
+			bool_val = True
+		elif str_val == "0":
+			bool_val = False
+		else:
+			bool_val = None
+		return bool_val
 
 	async def led_blink(self):
 		led_onboard = Pin(25, Pin.OUT)
@@ -170,6 +285,16 @@ class App:
 					self.handle_set_time_cmd(decoded)
 				elif decoded.startswith(const.SET_BRIGHTNESS_CMD_PREFIX):
 					self.handle_set_bright_cmd(decoded)
+				elif decoded.startswith(const.SET_SHOW_SCORE_CMD_PREFIX):
+					self.handle_set_show_score_cmd(decoded)
+				elif decoded.startswith(const.SET_SHOW_DATE_CMD_PREFIX):
+					self.handle_set_show_date_cmd(decoded)
+				elif decoded.startswith(const.SET_SHOW_TIME_CMD_PREFIX):
+					self.handle_set_show_time_cmd(decoded)
+				elif decoded.startswith(const.SET_SCROLL_CMD_PREFIX):
+					self.handle_set_scroll_cmd(decoded)
+				elif decoded.startswith(const.GET_CONFIG_CMD):
+					await self.handle_get_cfg_cmd(decoded)
 
 	async def main(self):
 		asyncio.create_task(self.led_blink())
