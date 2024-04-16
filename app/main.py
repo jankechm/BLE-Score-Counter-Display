@@ -2,6 +2,7 @@
 
 from machine import Pin
 from app.mx_data import MxScore
+from app.data import Config
 # TODO
 # from app.mx_data import MxDate, MxTime
 from app.hw import display, ble_uart, rtc
@@ -13,6 +14,7 @@ import app.constants as const
 
 import micropython
 import gc
+import os
 
 class App:
 	def __init__(self):
@@ -243,6 +245,23 @@ class App:
 		# await self.ble_writer.awrite(scroll_msg.encode('ascii'))
 		# await asyncio.sleep_ms(40)
 
+	def handle_persist_cfg_cmd(self, cmd: str):
+		print("Handle PERSIST_CONFIG command")
+		cfg_str = cmd[len(const.PERSIST_CONFIG_CMD_PREFIX):]
+		isOk = False
+		try:
+			# Just test that the json config could be converted to Config obj
+			cfg_dict = json.loads(cfg_str)
+			Config(**cfg_dict)
+			isOk = True
+		except ValueError | TypeError:
+			print("Unable to parse Config!")
+		if isOk:
+			if not self.dir_exists(const.DATA_DIR):
+				os.mkdir(const.DATA_DIR)
+			with open(const.DATA_DIR + "/" + const.CONFIG_FILE, "w") as f:
+				f.write(cfg_str)
+
 	def parse_bool_str_cmd_val(self, str_val: str):
 		if str_val == "1":
 			bool_val = True
@@ -251,6 +270,13 @@ class App:
 		else:
 			bool_val = None
 		return bool_val
+	
+	def dir_exists(self, dir_path):
+		try:
+			os.listdir(dir_path)
+			return True
+		except OSError:
+			return False
 
 	async def led_blink(self):
 		led_onboard = Pin(25, Pin.OUT)
@@ -295,6 +321,8 @@ class App:
 					self.handle_set_scroll_cmd(decoded)
 				elif decoded.startswith(const.GET_CONFIG_CMD):
 					await self.handle_get_cfg_cmd(decoded)
+				elif decoded.startswith(const.PERSIST_CONFIG_CMD_PREFIX):
+					self.handle_persist_cfg_cmd(decoded)
 
 	async def main(self):
 		asyncio.create_task(self.led_blink())

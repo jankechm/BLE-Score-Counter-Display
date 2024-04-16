@@ -211,7 +211,7 @@ class MxScore(MxNumeric):
         """
 
         self.render()
-        await asyncio.sleep_ms(300)
+        await asyncio.sleep_ms(200)
 
         if self._score.left != l_val:
             if self._score.right != r_val:
@@ -223,9 +223,12 @@ class MxScore(MxNumeric):
             self._matrix.clear_half(const.RIGHT)
         else:
             self.render(render_delim=False)
+
+        await asyncio.sleep_ms(200)
+        self.render()
         
         self.set_score(l_val, r_val)
-        await asyncio.sleep_ms(400)
+        await asyncio.sleep_ms(200)
         self.render()
 
 @singleton
