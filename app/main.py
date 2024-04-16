@@ -210,41 +210,6 @@ class App:
 		print("Sending {}".format(cmd_to_send))
 		await self.ble_writer.awrite(cmd_to_send.encode('ascii'))
 
-		# bright_lvl_msg = "{}{}\r\n".format(
-		# 	const.CONFIG_BRIGHTNESS_CMD_PREFIX, 
-		# 	self.basic_viewer.config.bright_lvl)
-		# print("Sending {}".format(bright_lvl_msg))
-		# await self.ble_writer.awrite(bright_lvl_msg.encode('ascii'))
-		# await asyncio.sleep_ms(40)
-
-		# use_score = 1 if self.basic_viewer.config.use_score else 0
-		# use_score_msg = "{}{}\r\n".format(
-		# 	const.CONFIG_SHOW_SCORE_CMD_PREFIX, use_score)
-		# print("Sending {}".format(use_score_msg))
-		# await self.ble_writer.awrite(use_score_msg.encode('ascii'))
-		# await asyncio.sleep_ms(40)
-
-		# use_date = 1 if self.basic_viewer.config.use_date else 0
-		# use_date_msg = "{}{}\r\n".format(
-		# 	const.CONFIG_SHOW_DATE_CMD_PREFIX, use_date)
-		# print("Sending {}".format(use_date_msg))
-		# await self.ble_writer.awrite(use_date_msg.encode('ascii'))
-		# await asyncio.sleep_ms(40)
-		
-		# use_time = 1 if self.basic_viewer.config.use_time else 0
-		# use_time_msg = "{}{}\r\n".format(
-		# 	const.CONFIG_SHOW_TIME_CMD_PREFIX, use_time)
-		# print("Sending {}".format(use_time_msg))
-		# await self.ble_writer.awrite(use_time_msg.encode('ascii'))
-		# await asyncio.sleep_ms(40)
-
-		# scroll = 1 if self.basic_viewer.config.scroll else 0
-		# scroll_msg = "{}{}\r\n".format(
-		# 	const.CONFIG_SCROLL_CMD_PREFIX, scroll)
-		# print("Sending {}".format(scroll_msg))
-		# await self.ble_writer.awrite(scroll_msg.encode('ascii'))
-		# await asyncio.sleep_ms(40)
-
 	def handle_persist_cfg_cmd(self, cmd: str):
 		print("Handle PERSIST_CONFIG command")
 		cfg_str = cmd[len(const.PERSIST_CONFIG_CMD_PREFIX):]
@@ -260,7 +225,7 @@ class App:
 			if not self.dir_exists(const.DATA_DIR):
 				os.mkdir(const.DATA_DIR)
 			with open(const.DATA_DIR + "/" + const.CONFIG_FILE, "w") as f:
-				f.write(cfg_str)
+				f.write(cfg_str + "\n")
 
 	def parse_bool_str_cmd_val(self, str_val: str):
 		if str_val == "1":

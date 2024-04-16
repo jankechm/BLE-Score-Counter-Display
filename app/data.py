@@ -13,3 +13,6 @@ class Config:
         self.use_time = use_time
         self.scroll = scroll
         self.bright_lvl = bright_lvl
+
+    def __str__(self) -> str:
+        return str(self.__dict__)

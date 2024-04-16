@@ -1,13 +1,12 @@
 # Author: Marek Jankech
 
 import uasyncio as asyncio
+import ujson as json
 import app.constants as const
 from app.adt import CircularList
 from app.hw import display
 from app.mx_data import MxRenderable, MxDate, MxTime
 from app.data import Config
-# TODO
-# from app.mx_data import MxDate
 
 SPACE = 8
 
@@ -24,16 +23,42 @@ class BasicViewer:
     ALTERNATE_MODE = 2
 
     def __init__(self):
-        # TODO get Config from constructor or load later from the phone
-        self.config = Config(True, False, True, False, const.INITIAL_BRIGHTNESS)
+        self.config = self._load_cfg()
+        
         self._matrix = display
 
         self.score = None
         self._to_render = []
 
-        self.load()
+        self._set_rendering_options()
 
-    def load(self):
+    def disable(self):
+        self._view_mode = NO_VIEW
+
+    async def view_info(self):
+        self._set_rendering_options()
+
+        if self._view_mode == self.SCROLL_MODE:
+            await self._scroll()
+        else:
+            await self._alternate()
+
+    def _load_cfg(self):
+        config = Config(True, False, True, False, const.INITIAL_BRIGHTNESS)
+
+        try:
+            with open(const.DATA_DIR + "/" + const.CONFIG_FILE, "r") as f:
+                cfg_str = f.readline()
+                cfg_dict = json.loads(cfg_str)
+                config = Config(**cfg_dict)
+                print("Loaded config: {}".format(config))
+        except OSError | ValueError | TypeError:
+            print("Unable to read persisted configuration!" + 
+                  "Using default configuration: {}".format(config))
+            
+        return config
+    
+    def _set_rendering_options(self):
         self._to_render = []
 
         if self.config.use_score and self.score is not None:
@@ -47,29 +72,6 @@ class BasicViewer:
             self._view_mode = self.SCROLL_MODE
         else:
             self._view_mode = self.ALTERNATE_MODE
-
-    def disable(self):
-        self._view_mode = NO_VIEW
-
-    # def set_use_score(self, val: bool):
-    #     self.config.use_score = val
-
-    # def set_use_date(self, val: bool):
-    #     self.config.use_date = val
-
-    # def set_use_time(self, val: bool):
-    #     self.config.use_time = val
-
-    # def set_use_scroll(self, val: bool):
-    #     self.config.scroll = val
-
-    async def view_info(self):
-        self.load()
-
-        if self._view_mode == self.SCROLL_MODE:
-            await self._scroll()
-        else:
-            await self._alternate()
 
     async def _alternate(self):
         """
@@ -141,5 +143,3 @@ class BasicViewer:
             self._matrix.redraw_twice()
 
             await asyncio.sleep_ms(FIVE_MILLIS)
-
-
