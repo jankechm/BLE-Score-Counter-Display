@@ -300,13 +300,15 @@ class MxTime(MxNumeric):
 
         self.pull()
 
-        self._matrix.fill(0)
+        if pre_clear:
+            self._matrix.fill(0)
 
         self._render_2_digit_num(self._hours, x_shift)
         self._render_time_delimiter(x_shift)
         self._render_2_digit_num(self._minutes, x_shift + self.MINUTES_X_SHIFT)
 
-        self._matrix.redraw_twice()
+        if redraw:
+            self._matrix.redraw_twice()
 
     def _render_time_delimiter(self, x_shift=0):
         self._matrix.hline(15 + x_shift, 4, 2, 1)

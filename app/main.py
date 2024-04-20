@@ -43,9 +43,6 @@ class App:
 
 		# Info renderable on the matrix
 		self.mx_score = MxScore()
-		# TODO
-		# self.mx_date = MxDate()
-		# self.mx_time = MxTime()
 
 		self.basic_viewer = BasicViewer()
 		self.basic_viewer.score = self.mx_score  # type: ignore
