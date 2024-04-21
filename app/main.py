@@ -224,6 +224,23 @@ class App:
 			with open(const.DATA_DIR + "/" + const.CONFIG_FILE, "w") as f:
 				f.write(cfg_str + "\n")
 
+	def handle_all_leds_on_cmd(self, cmd: str):
+		print("Handle SET_ALL_LEDS_ON command")
+		all_leds_on_str = cmd[len(const.SET_ALL_LEDS_ON_CMD_PREFIX):]
+		all_leds_on = self.parse_bool_str_cmd_val(all_leds_on_str)
+		if all_leds_on is None:
+			print("Invalid value for SET_ALL_LEDS_ON!")
+		else:
+			if all_leds_on:
+				print("Set all LEDs on!")
+				self.basic_mode = False
+				self.basic_viewer.disable()
+				self.display.fill(1)
+				self.display.redraw_twice()
+			else:
+				print("Disable all LEDs on!")
+				self.basic_mode = True
+
 	def parse_bool_str_cmd_val(self, str_val: str):
 		if str_val == "1":
 			bool_val = True
@@ -285,6 +302,8 @@ class App:
 					await self.handle_get_cfg_cmd(decoded)
 				elif decoded.startswith(const.PERSIST_CONFIG_CMD_PREFIX):
 					self.handle_persist_cfg_cmd(decoded)
+				elif decoded.startswith(const.SET_ALL_LEDS_ON_CMD_PREFIX):
+					self.handle_all_leds_on_cmd(decoded)
 
 	async def main(self):
 		asyncio.create_task(self.led_blink())

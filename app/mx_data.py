@@ -230,6 +230,7 @@ class MxScore(MxNumeric):
         self.set_score(l_val, r_val)
         await asyncio.sleep_ms(200)
         self.render()
+        await asyncio.sleep_ms(200)
 
 @singleton
 class MxDate(MxNumeric):
