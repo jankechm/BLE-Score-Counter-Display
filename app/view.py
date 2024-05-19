@@ -25,8 +25,6 @@ class BasicViewer:
     def __init__(self):
         self.config = self._load_cfg()
         
-        self._matrix = display
-
         self.score = None
         self._to_render = []
 
@@ -60,6 +58,8 @@ class BasicViewer:
     
     def _set_rendering_options(self):
         self._to_render = []
+
+        display.set_brightness(self.config.bright_lvl)
 
         if self.config.use_score and self.score is not None:
             self._to_render.append(self.score)
@@ -135,11 +135,11 @@ class BasicViewer:
             if self._view_mode != self.SCROLL_MODE:
                 break
             
-            self._matrix.fill(0)
+            display.fill(0)
 
             obj1.render(x_shift, False, False)
             obj2.render(x_shift + SPACE + self.ONE_INFO_LEN, False, False)
 
-            self._matrix.redraw_twice()
+            display.redraw_twice()
 
             await asyncio.sleep_ms(FIVE_MILLIS)

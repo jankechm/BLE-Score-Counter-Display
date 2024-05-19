@@ -12,3 +12,4 @@
     - No configuration on the phone = send default configuration.
     - Do not store any profiles on the BLE display.
     - Do not change the configuration after a different phone connects during one run.
+- Configurable sleep_ms when setting score.
