@@ -79,21 +79,26 @@ class App:
 
 	async def handle_set_score_cmd(self, cmd: str):
 		print("Handle SET_SCORE command")
-		score = cmd[len(const.SET_SCORE_CMD_PREFIX):]
-		score = score.split(const.SET_SCORE_CMD_SCORE_DELIMITER)
-		if len(score) == 2:
-			isOk = False
-			try:
-				left_score = int(score[0])
-				right_score = int(score[1])
-				isOk = True
-			except ValueError:
-				print("Unable to parse score!")
-			if isOk:
-				self.basic_mode = False
-				self.basic_viewer.disable()
-				await self.mx_score.render_change(left_score, right_score)
-				self.basic_mode = True
+		score_and_timestamp = cmd[len(const.SET_SCORE_CMD_PREFIX):]\
+			.split(const.TIMESTAMP_DELIMITER)
+		if len(score_and_timestamp) == 2:
+			score = score_and_timestamp[0]\
+				.split(const.SET_SCORE_CMD_SCORE_DELIMITER)
+			if len(score) == 2:
+				isOk = False
+				try:
+					left_score = int(score[0])
+					right_score = int(score[1])
+					timestamp = int(score_and_timestamp[1])
+					isOk = True
+				except ValueError:
+					print("Unable to parse score and timestamp!")
+				if isOk:
+					self.basic_mode = False
+					self.basic_viewer.disable()
+					self.mx_score.timestamp = timestamp
+					await self.mx_score.render_change(left_score, right_score)
+					self.basic_mode = True
 
 	def handle_set_time_cmd(self, cmd: str):
 		print("Handle SET_TIME command")
@@ -199,6 +204,15 @@ class App:
 				self.basic_viewer.config.scroll = scroll
 				self.basic_mode = True
 
+	async def handle_get_score_cmd(self, cmd: str):
+		print("Handle GET_SCORE command")
+		score = self.mx_score.score
+		cmd_to_send = "{}{}:{}T{}\r\n".format(
+			const.SCORE_CMD_PREFIX, score.left, score.right, 
+			self.mx_score.timestamp)
+		print("Sending {}".format(cmd_to_send))
+		await self.ble_writer.awrite(cmd_to_send.encode('ascii'))
+
 	async def handle_get_cfg_cmd(self, cmd: str):
 		print("Handle GET_CONFIG command")
 		cfg_str = json.dumps(self.basic_viewer.config.__dict__)
@@ -286,6 +300,8 @@ class App:
 
 				if decoded.startswith(const.SET_SCORE_CMD_PREFIX):
 					await self.handle_set_score_cmd(decoded)
+				elif decoded.startswith(const.GET_SCORE_CMD):
+					await self.handle_get_score_cmd(decoded)
 				elif decoded.startswith(const.SET_TIME_CMD_PREFIX):
 					self.handle_set_time_cmd(decoded)
 				elif decoded.startswith(const.SET_BRIGHTNESS_CMD_PREFIX):

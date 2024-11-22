@@ -147,38 +147,39 @@ class MxScore(MxNumeric):
     def __init__(self) -> None:
         super().__init__()
 
-        self._score = Score(0,0)
+        self.score = Score(0,0)
+        self.timestamp: int = 0
 
     def set_score(self, l_val, r_val):
         self.set_left(l_val)
         self.set_right(r_val)
-
+    
     def set_left(self, val):
         if val > self.MAX_SCORE:
-            self._score.left = self.MAX_SCORE
+            self.score.left = self.MAX_SCORE
         elif val < self.MIN_SCORE:
-            self._score.left = self.MIN_SCORE
+            self.score.left = self.MIN_SCORE
         else:
-            self._score.left = val
+            self.score.left = val
 
     def set_right(self, val):
         if val > self.MAX_SCORE:
-            self._score.right = self.MAX_SCORE
+            self.score.right = self.MAX_SCORE
         elif val < self.MIN_SCORE:
-            self._score.right = self.MIN_SCORE
+            self.score.right = self.MIN_SCORE
         else:
-            self._score.right = val
+            self.score.right = val
 
     def render(self, x_shift=0, pre_clear=True, redraw=True, render_delim=True):
         if pre_clear:
             self._matrix.fill(0)
 
-        (l_tens, l_ones) = divmod(self._score.left, 10)
-        (r_tens, r_ones) = divmod(self._score.right, 10)
+        (l_tens, l_ones) = divmod(self.score.left, 10)
+        (r_tens, r_ones) = divmod(self.score.right, 10)
 
         if l_tens > self.ONE_TENS_DIGIT or r_tens > self.ONE_TENS_DIGIT:
-            l_score = self.SingleHigherTwoDigit(self._score.left, const.LEFT)
-            r_score = self.SingleHigherTwoDigit(self._score.right, const.RIGHT)
+            l_score = self.SingleHigherTwoDigit(self.score.left, const.LEFT)
+            r_score = self.SingleHigherTwoDigit(self.score.right, const.RIGHT)
         else:
             if l_tens == self.ZERO_TENS_DIGIT:
                 l_score = self.SingleOneDigit(l_ones, const.LEFT)
@@ -213,13 +214,13 @@ class MxScore(MxNumeric):
         self.render()
         await asyncio.sleep_ms(200)
 
-        if self._score.left != l_val:
-            if self._score.right != r_val:
+        if self.score.left != l_val:
+            if self.score.right != r_val:
                 self._matrix.fill(0)
                 self._matrix.redraw_twice()
             else:
                 self._matrix.clear_half(const.LEFT)
-        elif self._score.right != r_val:
+        elif self.score.right != r_val:
             self._matrix.clear_half(const.RIGHT)
         else:
             self.render(render_delim=False)
