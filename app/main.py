@@ -206,7 +206,7 @@ class App:
 		print("Sending {}".format(cmd_to_send))
 		await self.ble_writer.awrite(cmd_to_send.encode('ascii'))
 
-	def handle_persist_cfg_cmd(self, cmd: str):
+	async def handle_persist_cfg_cmd(self, cmd: str):
 		print("Handle PERSIST_CONFIG command")
 		cfg_str = cmd[len(const.PERSIST_CONFIG_CMD_PREFIX):]
 		isOk = False
@@ -222,6 +222,9 @@ class App:
 				os.mkdir(const.DATA_DIR)
 			with open(const.DATA_DIR + "/" + const.CONFIG_FILE, "w") as f:
 				f.write(cfg_str + "\n")
+			cmd_to_send = "{}\r\n".format(const.CFG_PERSIST_ACK_CMD)
+			print("Sending {}".format(cmd_to_send))
+			await self.ble_writer.awrite(cmd_to_send.encode('ascii'))
 
 	def handle_all_leds_on_cmd(self, cmd: str):
 		print("Handle SET_ALL_LEDS_ON command")
@@ -300,7 +303,7 @@ class App:
 				elif decoded.startswith(const.GET_CONFIG_CMD):
 					await self.handle_get_cfg_cmd(decoded)
 				elif decoded.startswith(const.PERSIST_CONFIG_CMD_PREFIX):
-					self.handle_persist_cfg_cmd(decoded)
+					await self.handle_persist_cfg_cmd(decoded)
 				elif decoded.startswith(const.SET_ALL_LEDS_ON_CMD_PREFIX):
 					self.handle_all_leds_on_cmd(decoded)
 
