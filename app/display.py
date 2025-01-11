@@ -70,6 +70,10 @@ class Matrix:
 	def turn_on(self):
 		self._write(const.SHUTDOWN, const.SHUTDOWN_MODE_OFF)
 
+	def display_test(self, is_on: bool):
+		self._write(const.DISPLAYTEST, 
+			  const.DISPLAY_TEST_ON if is_on else const.DISPLAYTEST_TEST_OFF)
+
 	def set_brightness(self, val):
 		self._write(const.INTENSITY, val)
 

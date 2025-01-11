@@ -159,21 +159,6 @@ class App:
 				self.basic_viewer.config.use_score = show_score
 				self.basic_mode = True
 
-	def handle_set_show_date_cmd(self, cmd: str):
-		print("Handle SET_SHOW_DATE command")
-		show_date_str = cmd[len(const.SET_SHOW_DATE_CMD_PREFIX):]
-		show_date = self.parse_bool_str_cmd_val(show_date_str)
-		if show_date is None:
-			print("Invalid show date value!")
-		else:
-			# Halt rendering only if show_date value is different
-			# than the value in current config.
-			if self.basic_viewer.config.use_date != show_date:
-				self.basic_mode = False
-				self.basic_viewer.disable()
-				self.basic_viewer.config.use_date = show_date
-				self.basic_mode = True
-
 	def handle_set_show_time_cmd(self, cmd: str):
 		print("Handle SET_SHOW_TIME command")
 		show_time_str = cmd[len(const.SET_SHOW_TIME_CMD_PREFIX):]
@@ -308,8 +293,6 @@ class App:
 					self.handle_set_bright_cmd(decoded)
 				elif decoded.startswith(const.SET_SHOW_SCORE_CMD_PREFIX):
 					self.handle_set_show_score_cmd(decoded)
-				elif decoded.startswith(const.SET_SHOW_DATE_CMD_PREFIX):
-					self.handle_set_show_date_cmd(decoded)
 				elif decoded.startswith(const.SET_SHOW_TIME_CMD_PREFIX):
 					self.handle_set_show_time_cmd(decoded)
 				elif decoded.startswith(const.SET_SCROLL_CMD_PREFIX):

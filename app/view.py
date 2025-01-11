@@ -42,7 +42,7 @@ class BasicViewer:
             await self._alternate()
 
     def _load_cfg(self):
-        config = Config(True, False, True, False, const.INITIAL_BRIGHTNESS)
+        config = Config(True, False, False, const.INITIAL_BRIGHTNESS)
 
         try:
             with open(const.DATA_DIR + "/" + const.CONFIG_FILE, "r") as f:
@@ -63,8 +63,6 @@ class BasicViewer:
 
         if self.config.use_score and self.score is not None:
             self._to_render.append(self.score)
-        if self.config.use_date:
-            self._to_render.append(MxDate())
         if self.config.use_time:
             self._to_render.append(MxTime())
         
