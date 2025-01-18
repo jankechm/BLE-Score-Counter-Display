@@ -243,6 +243,11 @@ class App:
                 print("Disable all LEDs on!")
                 self.basic_mode = True
 
+    async def handle_disconnect_cmd(self, cmd: str):
+        cmd_to_send = const.AT_DISCONNECT_CMD + "\r\n"
+        print("Sending {}".format(cmd_to_send))
+        await self.ble_writer.awrite(cmd_to_send.encode('ascii'))
+
     def parse_bool_str_cmd_val(self, str_val: str):
         if str_val == "1":
             bool_val = True
@@ -306,6 +311,8 @@ class App:
                     await self.handle_persist_cfg_cmd(decoded)
                 elif decoded.startswith(const.SET_ALL_LEDS_ON_CMD_PREFIX):
                     self.handle_all_leds_on_cmd(decoded)
+                elif decoded.startswith(const.DISCONNECT_CMD):
+                    await self.handle_disconnect_cmd(decoded)
 
     async def main(self):
         asyncio.create_task(self.led_blink())
