@@ -50,7 +50,7 @@ class BasicViewer:
                 cfg_dict = json.loads(cfg_str)
                 config = Config(**cfg_dict)
                 print("Loaded config: {}".format(config))
-        except OSError | ValueError | TypeError:
+        except (OSError, ValueError, TypeError):
             print("Unable to read persisted configuration!" + 
                   "Using default configuration: {}".format(config))
             
